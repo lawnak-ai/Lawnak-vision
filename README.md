@@ -45,8 +45,27 @@ Without a key you can still use the **Templates** and edit slides by hand.
 npm run build      # type check and build into out/
 npm start          # run the built app
 npm test           # unit tests
-npm run dist       # package an installer into release/ (Windows .exe, macOS .dmg, Linux AppImage)
+npm run dist       # package an installer into release/ for the current OS
+npx electron-builder --win   # Windows installer: release/LawnakVision-Setup-<version>.exe
 ```
+
+Building the Windows installer on Linux needs Wine with 32-bit support
+(`sudo dpkg --add-architecture i386 && sudo apt install wine wine64 wine32:i386`).
+On Windows, `npm run dist` builds it directly.
+
+## Releasing
+
+The **Build and release** GitHub Actions workflow (`.github/workflows/release.yml`) builds the Windows installer
+on a Windows runner. To publish a release:
+
+```bash
+git tag v0.2.0
+git push origin v0.2.0
+```
+
+The workflow sets the app version from the tag, runs the type check and tests, builds
+`LawnakVision-Setup-0.2.0.exe`, and publishes it on the repo's **Releases** page with auto-generated notes.
+Pull requests run the same build without publishing, and the installer is kept as a downloadable build artifact.
 
 ## Keyboard shortcuts
 

@@ -6,8 +6,19 @@ directories:
 files:
   - out/**
   - package.json
+icon: resources/icon.png
 win:
-  target: nsis
+  target:
+    - target: nsis
+      arch: [x64]
+  artifactName: LawnakVision-Setup-${version}.exe
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: Lawnak Vision
 mac:
   target: dmg
   category: public.app-category.productivity
