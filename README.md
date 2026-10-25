@@ -56,16 +56,20 @@ On Windows, `npm run dist` builds it directly.
 ## Releasing
 
 The **Build and release** GitHub Actions workflow (`.github/workflows/release.yml`) builds the Windows installer
-on a Windows runner. To publish a release:
+on a Windows runner and publishes it on the repo's **Releases** page. There are two ways to release:
 
-```bash
-git tag v0.2.0
-git push origin v0.2.0
-```
+- **From the Actions tab (no command line):** open **Actions → Build and release → Run workflow**, enter a version
+  such as `0.2.0`, and click **Run workflow**. It creates the `v0.2.0` tag and the release for you.
+- **By pushing a tag:**
+  ```bash
+  git tag v0.2.0
+  git push origin v0.2.0
+  ```
 
-The workflow sets the app version from the tag, runs the type check and tests, builds
-`LawnakVision-Setup-0.2.0.exe`, and publishes it on the repo's **Releases** page with auto-generated notes.
-Pull requests run the same build without publishing, and the installer is kept as a downloadable build artifact.
+Either way the workflow sets the app version, runs the type check and tests, builds
+`LawnakVision-Setup-0.2.0.exe`, and publishes it with auto-generated release notes.
+Running it without a version, and every pull request, only builds: the installer is kept as a downloadable
+build artifact and nothing is published.
 
 ## Keyboard shortcuts
 
