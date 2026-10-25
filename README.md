@@ -71,6 +71,10 @@ Either way the workflow sets the app version, runs the type check and tests, bui
 Running it without a version, and every pull request, only builds: the installer is kept as a downloadable
 build artifact and nothing is published.
 
+Each version can only be released once: if the tag already exists (Run workflow) or the release already has an
+installer, the workflow stops with an error before building. A release you create on GitHub's website
+(**Releases → Draft a new release** with a new `v…` tag) gets its installer attached automatically.
+
 ## Keyboard shortcuts
 
 | Where | Keys | Action |

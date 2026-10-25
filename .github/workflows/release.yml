@@ -54,6 +54,33 @@ jobs:
           echo "version=$v" >> "$GITHUB_OUTPUT"
           if [[ -n "$v" ]]; then echo "Releasing v$v"; else echo "Build only, no release"; fi
 
+      # Stops before building if this version was already released, so a
+      # second run can't replace the installer or repeat the release notes.
+      # A release created on GitHub's website (no installer yet) still gets one.
+      - name: Check for an existing release
+        id: existing
+        if: steps.version.outputs.version != ''
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          tag="v$VERSION"
+          if [[ "$GITHUB_EVENT_NAME" == "workflow_dispatch" ]] && git ls-remote --exit-code --tags origin "refs/tags/$tag" > /dev/null; then
+            echo "::error::Tag $tag already exists. Run the workflow again with a new version."
+            exit 1
+          fi
+          if assets="$(gh release view "$tag" --repo "$GITHUB_REPOSITORY" --json assets --jq '.assets[].name' 2> /dev/null)"; then
+            if grep -qE '^LawnakVision-Setup-.*\.exe$' <<< "$assets"; then
+              echo "::error::Release $tag already has an installer. Use a new version, or delete that release first."
+              exit 1
+            fi
+            echo "Release $tag exists without an installer; it will be attached."
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Install dependencies
         run: npm ci
 
@@ -89,5 +116,6 @@ jobs:
           files: |
             release/LawnakVision-Setup-*.exe
             release/LawnakVision-Setup-*.exe.blockmap
-          generate_release_notes: true
+          # Only for a new release; on an existing one this would append a second copy.
+          generate_release_notes: ${{ steps.existing.outputs.exists != 'true' }}
           fail_on_unmatched_files: true
