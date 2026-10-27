@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Timeline draw · component</title>
+<link rel="stylesheet" href="_preview/preview.css">
+</head>
+<body>
+<section class="slide active" dir="auto">
+<!-- COMPONENT timeline-draw: copy from here -->
+<style>
+/* Timeline draw: the line draws across, each milestone pops in as the line reaches it,
+   and the current one (class cx-tl-now, with the ring inside its dot) keeps pulsing. Works for 3-6 steps: set --cx-n to the number of steps
+   and --cx-i on each step (0, 1, 2...). Mirrors itself in right-to-left slides. */
+.cx-tl-head{display:flex;flex-direction:column;gap:12px}
+.cx-tl-head p{color:var(--muted)}
+.cx-tl{--cx-step:.45s;position:relative;margin-top:auto;margin-bottom:auto}
+.cx-tl ol{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(var(--cx-n,4),1fr);gap:16px}
+.cx-tl li{display:flex;flex-direction:column;align-items:center;text-align:center;gap:14px}
+.cx-tl-line{position:absolute;top:13px;height:4px;inset-inline:calc(50% / var(--cx-n,4));border-radius:4px;
+  background:linear-gradient(90deg,var(--accent),color-mix(in srgb,var(--accent) 40%,var(--fg)));transform-origin:left center}
+.cx-tl-line:dir(rtl){transform-origin:right center;background:linear-gradient(-90deg,var(--accent),color-mix(in srgb,var(--accent) 40%,var(--fg)))}
+.cx-tl-dot{position:relative;width:30px;height:30px;border-radius:50%;background:var(--bg-solid);border:5px solid var(--accent)}
+.cx-tl-now .cx-tl-dot{background:var(--accent)}
+.cx-tl-ring{position:absolute;inset:-5px;border-radius:50%;border:3px solid var(--accent);opacity:0}
+.cx-tl li b{font-family:var(--heading-font);font-size:40px;line-height:1;margin-top:8px}
+.cx-tl li span{font-size:24px;color:var(--muted);line-height:1.3;max-width:220px}
+
+/* Motion: the line takes (n-1) steps, and step i lands at .3s + i * step */
+.slide:is(.active,.lv-leave) .cx-tl-head>*{animation:cx-tl-up .8s var(--lv-ease) both;animation-delay:calc(.05s + var(--cx-i,0) * .1s)}
+.slide:is(.active,.lv-leave) .cx-tl-line{animation:cx-tl-draw calc((var(--cx-n,4) - 1) * var(--cx-step)) linear .3s both}
+.slide:is(.active,.lv-leave) .cx-tl-dot{animation:cx-tl-pop .5s cubic-bezier(.34,1.56,.64,1) both;animation-delay:calc(.25s + var(--cx-i) * var(--cx-step))}
+.slide:is(.active,.lv-leave) .cx-tl li>:not(.cx-tl-dot){animation:cx-tl-up .6s var(--lv-ease) both;animation-delay:calc(.35s + var(--cx-i) * var(--cx-step))}
+.slide:is(.active,.lv-leave) .cx-tl-ring{animation:cx-tl-pulse 2s ease-out infinite;animation-delay:calc(.6s + var(--cx-i) * var(--cx-step))}
+@keyframes cx-tl-draw{from{transform:scaleX(0)}}
+@keyframes cx-tl-pop{from{transform:scale(0)}}
+@keyframes cx-tl-up{from{opacity:0;transform:translateY(20px)}}
+@keyframes cx-tl-pulse{0%{opacity:.8;transform:scale(1)}100%{opacity:0;transform:scale(2.2)}}
+@media (prefers-reduced-motion:reduce){.cx-tl *,.cx-tl-head *{animation:none!important}}
+</style>
+<div class="cx-tl-head">
+  <h2 style="--cx-i:0">From idea to launch</h2>
+  <p style="--cx-i:1">Four years, four big steps</p>
+</div>
+<div class="cx-tl" style="--cx-n:4">
+  <div class="cx-tl-line"></div>
+  <ol>
+    <li style="--cx-i:0"><span class="cx-tl-dot"></span><b>2023</b><span>First prototype in a garage</span></li>
+    <li style="--cx-i:1"><span class="cx-tl-dot"></span><b>2024</b><span>Seed round and first 10 clients</span></li>
+    <li style="--cx-i:2"><span class="cx-tl-dot"></span><b>2025</b><span>Launch in three countries</span></li>
+    <li style="--cx-i:3" class="cx-tl-now"><span class="cx-tl-dot"><i class="cx-tl-ring" aria-hidden="true"></i></span><b>2026</b><span>1M users and growing</span></li>
+  </ol>
+</div>
+<!-- /COMPONENT timeline-draw -->
+</section>
+<script src="_preview/preview.js"></script>
+</body>
+</html>

@@ -11,11 +11,16 @@
  *
  * Anything outside the tags is a short message for the chat panel.
  */
+import { clampSceneSeconds } from './video'
 
 export interface ParsedSlide {
   html: string
   className?: string
   notes?: string
+  /** The slide number the model wrote, e.g. <slide number="3">, used when it fixes single slides. */
+  number?: number
+  /** Videos: seconds the scene stays on screen, from <slide duration="3.5">. */
+  duration?: number
 }
 
 export interface ParsedReply {
@@ -32,6 +37,8 @@ export interface ParsedReply {
 const SLIDE_RE = /<slide\b([^>]*)>([\s\S]*?)<\/slide>/gi
 const NOTES_RE = /<notes>([\s\S]*?)<\/notes>/i
 const CLASS_RE = /\bclass\s*=\s*"([^"]*)"|\bclass\s*=\s*'([^']*)'/i
+const NUMBER_RE = /\bnumber\s*=\s*["']?(\d+)/i
+const DURATION_RE = /\bduration\s*=\s*["']?(\d+(?:\.\d+)?)/i
 
 /** Remove a ```html fence the model might wrap around its output. */
 function stripFences(text: string): string {
@@ -52,7 +59,15 @@ export function parseReply(raw: string): ParsedReply {
     }
     const c = m[1].match(CLASS_RE)
     const className = (c?.[1] ?? c?.[2] ?? '').trim() || undefined
-    slides.push({ html: body.trim(), className, notes })
+    const num = m[1].match(NUMBER_RE)
+    const dur = m[1].match(DURATION_RE)
+    slides.push({
+      html: body.trim(),
+      className,
+      notes,
+      ...(num ? { number: Number(num[1]) } : {}),
+      ...(dur ? { duration: clampSceneSeconds(Number(dur[1])) } : {})
+    })
   }
 
   const title = text.match(/<deck-title>([\s\S]*?)<\/deck-title>/i)?.[1].trim()

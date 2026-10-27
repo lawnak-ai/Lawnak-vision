@@ -36,6 +36,12 @@ export const IconTemplate = make(
     <path d="M3 9h18M9 21V9" />
   </>
 )
+export const IconComponents = make(
+  <>
+    <path d="M12 3 20 7.5v9L12 21l-8-4.5v-9z" />
+    <path d="M12 12 20 7.5M12 12 4 7.5M12 12v9" />
+  </>
+)
 export const IconSettings = make(
   <>
     <circle cx="12" cy="12" r="3" />
@@ -103,3 +109,35 @@ export const IconEye = make(
 )
 export const IconX = make(<path d="M6 6l12 12M18 6 6 18" />)
 export const IconLogo = make(<path d="M4 20 12 4l8 16M8 13h8" strokeWidth={2.4} />)
+export const IconChevronRight = make(<path d="m9 6 6 6-6 6" />)
+export const IconPanelRight = make(
+  <>
+    <rect x="3" y="4" width="18" height="16" rx="2" />
+    <path d="M15 4v16" />
+  </>
+)
+export const IconVideo = make(
+  <>
+    <rect x="3" y="6" width="13" height="12" rx="2" />
+    <path d="m16 10 5-3v10l-5-3z" />
+  </>
+)
+export const IconMusic = make(
+  <>
+    <path d="M9 18V5l11-2v13" />
+    <circle cx="6" cy="18" r="3" />
+    <circle cx="17" cy="16" r="3" />
+  </>
+)
+export const IconClock = make(
+  <>
+    <circle cx="12" cy="12" r="9" />
+    <path d="M12 7v5l3 2" />
+  </>
+)
+export const IconSlides = make(
+  <>
+    <rect x="3" y="5" width="18" height="12" rx="2" />
+    <path d="M8 21h8M12 17v4" />
+  </>
+)

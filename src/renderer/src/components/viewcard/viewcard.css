@@ -1,0 +1,165 @@
+/* ---------- View Cards gallery ---------- */
+
+.vc-page { flex: 1; overflow-y: auto; padding: 40px 48px 64px; }
+.vc-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; flex-wrap: wrap; }
+.vc-chips { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 18px; }
+.vc-chip { padding: 6px 12px; border-radius: 999px; border: 1px solid var(--border); background: var(--panel); color: var(--text-dim); font-size: 13px; cursor: pointer; }
+.vc-chip:hover { border-color: var(--border-strong); color: var(--text); }
+.vc-chip.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+.vc-picked { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 13px; color: var(--text-dim); }
+.vc-picked b { color: var(--text); font-weight: 600; }
+.vc-picked .vc-tag { background: var(--raised); border: 1px solid var(--border); border-radius: 999px; padding: 3px 10px; color: var(--text); }
+
+.vc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: 22px; margin-top: 22px; }
+.vc-card { display: flex; flex-direction: column; border-radius: 14px; border: 1px solid var(--border); background: var(--panel); overflow: hidden; transition: border-color .15s, box-shadow .15s; }
+.vc-card:hover { border-color: var(--border-strong); }
+.vc-card.picked { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+.vc-stage { position: relative; height: 340px; background: radial-gradient(120% 90% at 50% 0%, #1f1d2b 0%, #0d0c12 70%); color: #f1f1f1; overflow: hidden; display: flex; align-items: center; justify-content: center; isolation: isolate; }
+.vc-stage > * { flex: 1 1 auto; }
+.vc-stage-num { position: absolute; top: 10px; left: 12px; font-size: 11px; letter-spacing: .08em; color: rgba(255,255,255,.45); z-index: 5; pointer-events: none; }
+.vc-stage-hint { position: absolute; top: 8px; right: 10px; font-size: 11px; color: rgba(255,255,255,.5); z-index: 5; pointer-events: none; background: rgba(0,0,0,.35); padding: 3px 8px; border-radius: 999px; backdrop-filter: blur(6px); }
+.vc-body { display: flex; flex-direction: column; gap: 6px; padding: 14px 16px 16px; }
+.vc-title-row { display: flex; align-items: center; gap: 8px; }
+.vc-title-row strong { font-size: 15px; color: var(--title); }
+.vc-cat { font-size: 11px; color: var(--text-faint); border: 1px solid var(--border); border-radius: 999px; padding: 1px 8px; }
+.vc-desc { margin: 0; color: var(--text-dim); font-size: 13px; line-height: 1.5; }
+.vc-good { margin: 0; font-size: 12.5px; color: var(--text-dim); }
+.vc-good b { color: var(--text); font-weight: 600; }
+.vc-actions { display: flex; gap: 6px; margin-top: 8px; }
+.vc-btn { display: inline-flex; align-items: center; gap: 6px; padding: 6px 11px; border-radius: 8px; border: 1px solid var(--border); background: var(--raised); color: var(--text); font-size: 12.5px; cursor: pointer; }
+.vc-btn:hover { background: var(--hover); }
+.vc-btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.vc-btn.primary:hover { background: var(--accent-strong); }
+.vc-btn.ghost { background: transparent; }
+.vc-source { margin-left: auto; align-self: center; font-size: 11px; color: var(--text-faint); }
+
+.vc-modal { position: fixed; inset: 0; z-index: 200; background: var(--backdrop); display: flex; align-items: center; justify-content: center; padding: 32px; }
+.vc-modal-box { width: min(1200px, 100%); height: min(780px, 100%); display: flex; flex-direction: column; background: var(--panel); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; box-shadow: 0 30px 80px var(--shadow-strong); }
+.vc-modal-head { display: flex; align-items: center; gap: 10px; padding: 12px 16px; border-bottom: 1px solid var(--border); }
+.vc-modal-head strong { font-size: 15px; color: var(--title); }
+.vc-modal-head .vc-actions { margin: 0 0 0 auto; }
+.vc-modal .vc-stage { flex: 1; height: auto; }
+
+/* ---------- Rotating Cards ---------- */
+.vc-rot { position: relative; width: 100%; height: 100%; perspective: 1100px; user-select: none; }
+.vc-rot-ring { position: absolute; left: 50%; top: 50%; transform-style: preserve-3d; }
+.vc-rot-card { position: absolute; border-radius: 14px; background-size: cover; background-position: center; background-color: #2a2840; display: flex; align-items: flex-end; padding: 10px; box-shadow: 0 10px 30px rgba(0,0,0,.4), inset 0 0 0 1px rgba(255,255,255,.12); font: 700 22px/1 var(--font, system-ui); color: #fff; text-shadow: 0 2px 8px rgba(0,0,0,.6); cursor: pointer; }
+
+/* ---------- Shader Card ---------- */
+.vc-shader-card { position: relative; overflow: hidden; flex: 0 0 auto !important; box-shadow: 0 20px 60px rgba(0,0,0,.5), inset 0 0 0 1px rgba(255,255,255,.08); will-change: transform; }
+.vc-shader-card canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.vc-shader-content { position: relative; z-index: 1; height: 100%; display: flex; flex-direction: column; padding: 22px; gap: 8px; color: #fff; }
+.vc-shader-content h3 { margin: 0; font-size: 22px; letter-spacing: -.01em; }
+.vc-shader-content p { margin: 0; font-size: 13px; color: rgba(255,255,255,.7); line-height: 1.5; }
+.vc-shader-content .vc-shader-cta { margin-top: auto; align-self: flex-start; padding: 8px 14px; border-radius: 999px; background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.2); font-size: 12px; backdrop-filter: blur(8px); }
+
+/* ---------- Depth Ribbon ---------- */
+.vc-ribbon { position: relative; width: 100%; height: 100%; min-height: 300px; outline: none; user-select: none; cursor: grab; }
+.vc-ribbon canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.vc-ribbon-kids { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none; transition: opacity .3s; }
+.vc-ribbon-caption { position: absolute; left: 50%; bottom: 22px; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 8px 16px; border-radius: 12px; background: rgba(0,0,0,.45); backdrop-filter: blur(8px); animation: vc-rise .35s ease both; }
+.vc-ribbon-caption strong { font-size: 15px; }
+.vc-ribbon-caption span { font-size: 12px; opacity: .7; }
+
+/* ---------- Album Rail ---------- */
+.vc-album { position: relative; width: 100%; height: 100%; display: flex; flex-direction: column; outline: none; user-select: none; }
+.vc-album-stage { position: relative; flex: 1; perspective: 1200px; cursor: grab; }
+.vc-album-cover { position: absolute; left: 50%; top: 50%; transform-style: preserve-3d; will-change: transform; }
+.vc-album-sleeve { position: absolute; inset: 0; background-size: cover; background-position: center; }
+.vc-album-sleeve::after { content: ''; position: absolute; inset: 0; border-radius: inherit; background: linear-gradient(135deg, rgba(255,255,255,.18), transparent 40%); box-shadow: inset 0 0 0 1px rgba(255,255,255,.1); }
+.vc-album-disc { position: absolute; left: 4%; top: 4%; width: 92%; height: 92%; border-radius: 50%; box-shadow: 0 6px 20px rgba(0,0,0,.5); }
+.vc-album-caption { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 4px 0 6px; animation: vc-slide .35s ease both; }
+.vc-album-caption strong { font-size: 15px; }
+.vc-album-caption span { font-size: 12px; opacity: .65; }
+.vc-album-controls { display: flex; align-items: center; gap: 10px; padding: 0 18px 14px; }
+.vc-album-controls button { width: 28px; height: 28px; border-radius: 50%; border: 1px solid rgba(255,255,255,.2); background: rgba(255,255,255,.06); color: #fff; font-size: 16px; line-height: 1; cursor: pointer; display: grid; place-items: center; }
+.vc-album-controls .vc-album-play { width: 34px; height: 34px; border: 0; color: #111; font-size: 12px; }
+.vc-album-ruler { position: relative; flex: 1; height: 24px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; }
+.vc-album-ruler span { width: 2px; height: 8px; background: rgba(255,255,255,.3); border-radius: 1px; }
+.vc-album-ruler span.on { height: 14px; background: #fff; }
+.vc-album-marker { position: absolute; top: 50%; width: 10px; height: 10px; border-radius: 50%; transform: translate(-50%, -50%); box-shadow: 0 0 0 3px rgba(0,0,0,.3); pointer-events: none; }
+
+/* ---------- Elastic Reel ---------- */
+.vc-reel { position: relative; width: 100%; height: 100%; min-height: 300px; outline: none; user-select: none; overflow: hidden; }
+.vc-reel-bar { position: absolute; left: 0; top: 0; background-size: cover; background-position: center; cursor: pointer; box-shadow: 0 10px 24px rgba(0,0,0,calc(var(--vc-shadow) * 1.2)), inset 0 0 0 1px rgba(255,255,255,.12); will-change: transform, width, height; }
+.vc-reel-big { position: absolute; left: 0; top: 0; display: none; background-size: cover; background-position: center; z-index: 3; box-shadow: 0 30px 70px rgba(0,0,0,.55), inset 0 0 0 1px rgba(255,255,255,.12); cursor: zoom-out; }
+.vc-reel-caption { position: absolute; left: 0; right: 0; bottom: 14px; height: 44px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; font-size: 14px; }
+.vc-reel-caption strong { font-size: 15px; }
+.vc-reel-caption span { opacity: .7; font-size: 12.5px; }
+
+/* ---------- Elastic Sticker ---------- */
+.vc-sticker-area { position: relative; width: 100%; height: 100%; }
+.vc-sticker { position: absolute; outline: none; will-change: transform; }
+.vc-sticker-shadow, .vc-sticker-tilt, .vc-sticker-clip { position: absolute; inset: 0; }
+.vc-sticker-face { position: absolute; inset: 0; box-sizing: border-box; background-size: cover; background-position: center; background-clip: padding-box; overflow: hidden; }
+.vc-sticker-gloss { position: absolute; inset: 0; background-size: 300% 300%; pointer-events: none; }
+.vc-sticker-gloss.holo { mix-blend-mode: color-dodge; }
+.vc-sticker-flapbox { position: absolute; filter: drop-shadow(-2px 3px 3px rgba(0,0,0,.35)); pointer-events: none; }
+.vc-sticker-flap { width: 100%; height: 100%; }
+
+/* ---------- Scroll Bend ---------- */
+.vc-bend { position: relative; width: 100%; height: 100%; min-height: 300px; outline: none; cursor: grab; }
+.vc-bend canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+
+/* ---------- Depth Card ---------- */
+.vc-depth { position: relative; overflow: hidden; flex: 0 0 auto !important; box-shadow: 0 24px 60px rgba(0,0,0,.5), inset 0 0 0 1px rgba(255,255,255,.1); will-change: transform; }
+.vc-depth-bg, .vc-depth-layer { position: absolute; inset: -6%; background-size: cover; background-position: center; will-change: transform; }
+.vc-depth-layer { background-size: contain; background-repeat: no-repeat; pointer-events: none; }
+.vc-depth-spot { position: absolute; inset: 0; mix-blend-mode: soft-light; pointer-events: none; opacity: 0; }
+.vc-depth-content { position: absolute; left: 0; right: 0; bottom: 0; padding: 60px 18px 18px; background: linear-gradient(transparent, rgba(0,0,0,.75)); color: #fff; }
+.vc-depth-content h3 { margin: 0 0 4px; font-size: 20px; }
+.vc-depth-content p { margin: 0; font-size: 12.5px; line-height: 1.5; color: rgba(255,255,255,.75); }
+.vc-depth.reveal-slide .vc-depth-content > * { animation: vc-slide .6s cubic-bezier(.2,.8,.2,1) both; }
+.vc-depth.reveal-fade .vc-depth-content > * { animation: vc-fade .6s ease both; }
+.vc-depth.reveal-scale .vc-depth-content > * { animation: vc-scale .6s cubic-bezier(.2,.8,.2,1) both; }
+
+/* ---------- Lenticular Carousel ---------- */
+.vc-lenti { width: 100%; display: flex; flex-direction: column; gap: 4px; outline: none; user-select: none; }
+.vc-lenti-view { position: relative; overflow: hidden; display: flex; align-items: center; }
+.vc-lenti-track { display: flex; flex: none; margin-left: 50%; align-items: center; transition: transform .55s cubic-bezier(.2,.8,.2,1); }
+.vc-lenti-slide { position: relative; flex: 0 0 auto; transition: transform .45s cubic-bezier(.2,.8,.2,1), filter .45s; cursor: pointer; }
+.vc-lenti-inner { position: absolute; inset: 0; transform-style: preserve-3d; box-shadow: 0 20px 50px rgba(0,0,0,.45); }
+.vc-lenti-strip { position: absolute; top: 0; bottom: 0; transform-style: preserve-3d; }
+.vc-lenti-face { position: absolute; inset: 0; backface-visibility: hidden; background-repeat: no-repeat; }
+.vc-lenti-face.back { transform: rotateY(180deg); }
+.vc-lenti-ribs, .vc-lenti-foil { position: absolute; inset: 0; pointer-events: none; border-radius: inherit; transform: translateZ(1px); }
+.vc-lenti-foil { background-image: linear-gradient(110deg, transparent 20%, rgba(255,0,170,.5) 32%, rgba(255,230,0,.5) 42%, rgba(0,255,190,.5) 52%, rgba(0,170,255,.5) 62%, transparent 75%); background-size: 260% 100%; mix-blend-mode: overlay; }
+.vc-lenti-label { position: absolute; left: 0; right: 0; bottom: 0; padding: 40px 14px 12px; font-size: 14px; font-weight: 600; color: #fff; background: linear-gradient(transparent, rgba(0,0,0,.75)); transform: translateZ(2px); border-radius: 0 0 14px 14px; }
+.vc-lenti-controls { display: flex; align-items: center; justify-content: center; gap: 12px; }
+.vc-lenti-controls button { width: 28px; height: 28px; border-radius: 50%; border: 1px solid rgba(255,255,255,.2); background: rgba(255,255,255,.06); color: #fff; font-size: 16px; cursor: pointer; }
+.vc-lenti-controls button:disabled { opacity: .3; cursor: default; }
+.vc-lenti-rail { display: flex; gap: 4px; }
+.vc-lenti-rail span { width: 18px; height: 3px; border-radius: 2px; background: rgba(255,255,255,.25); cursor: pointer; transition: background .3s, width .3s; }
+.vc-lenti-rail span.on { width: 30px; background: #fff; }
+
+/* ---------- Text Path ---------- */
+.vc-textpath { width: 100%; height: 100%; overflow: visible; font-family: inherit; }
+
+/* ---------- Custom Cursor ---------- */
+.vc-cursor { position: relative; width: 100%; height: 100%; overflow: hidden; }
+.vc-cursor, .vc-cursor * { cursor: none !important; }
+.vc-cursor-ring, .vc-cursor-dot { position: absolute; left: 0; top: 0; pointer-events: none; opacity: 0; z-index: 10; box-sizing: border-box; will-change: transform; }
+/* The ring sits under the content so labels stay readable over its picture; the dot stays on top. */
+.vc-cursor-ring { z-index: 1; }
+.vc-cursor > :not(.vc-cursor-ring):not(.vc-cursor-dot) { z-index: 2; }
+.vc-cursor-ring { overflow: hidden; display: grid; place-items: center; }
+.vc-cursor-img { position: absolute; inset: 0; background-size: cover; background-position: center; opacity: 0; }
+.vc-cursor-dot { border-radius: 50%; }
+.vc-cursor-demo { position: absolute; inset: 0; pointer-events: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; }
+.vc-cursor-demo p { margin: 0; font-size: 13px; color: rgba(255,255,255,.6); }
+.vc-cursor-tiles { display: flex; gap: 14px; }
+.vc-cursor-tile { pointer-events: auto; padding: 16px 22px; border-radius: 14px; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.12); font-size: 15px; font-weight: 600; }
+.vc-cursor-link { pointer-events: auto; font-size: 26px; font-weight: 700; letter-spacing: -.02em; padding: 4px 10px; border-radius: 8px; }
+
+/* ---------- Parallax Pills ---------- */
+.vc-pills { position: relative; overflow: hidden; }
+.vc-pill { position: absolute; display: flex; align-items: center; justify-content: center; white-space: nowrap; box-shadow: 0 10px 30px rgba(0,0,0,.3), inset 0 -3px 0 rgba(0,0,0,.12); will-change: transform; user-select: none; }
+.vc-pill.empty { box-shadow: inset 0 0 0 1px rgba(255,255,255,.1); }
+
+@keyframes vc-rise { from { opacity: 0; transform: translate(-50%, 8px); } }
+@keyframes vc-slide { from { opacity: 0; transform: translateY(14px); } }
+@keyframes vc-fade { from { opacity: 0; } }
+@keyframes vc-scale { from { opacity: 0; transform: scale(.9); } }
+@media (prefers-reduced-motion: reduce) {
+  .vc-depth-content > *, .vc-ribbon-caption, .vc-album-caption { animation: none !important; }
+}

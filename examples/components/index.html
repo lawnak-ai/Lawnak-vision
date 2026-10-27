@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Component gallery</title>
+<style>
+  :root{color-scheme:dark}
+  body{margin:0;padding:32px 16px;background:#08090d;color:#eef0f6;font:16px/1.5 system-ui,"Segoe UI","Noto Sans Arabic",sans-serif}
+  main{max-width:1200px;margin:0 auto}
+  h1{font-size:28px;margin:0 0 6px}
+  header p{margin:0 0 28px;color:#9ca3b8}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,520px),1fr));gap:24px}
+  figure{margin:0;border:1px solid #23263a;border-radius:14px;overflow:hidden;background:#0d0f16}
+  .frame{aspect-ratio:16/9;position:relative}
+  iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+  figcaption{display:flex;justify-content:space-between;gap:12px;padding:12px 16px;align-items:baseline}
+  figcaption b{font-family:ui-monospace,Consolas,monospace;font-size:15px}
+  figcaption span{color:#9ca3b8;font-size:14px}
+  a{color:#a99cff}
+  button{all:unset;cursor:pointer;padding:8px 14px;border-radius:8px;background:#8b7bff;color:#0a0b10;font-weight:600}
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>Motion components</h1>
+    <p>Every card plays live. Open one to replay it, switch to light, RTL or the static (PDF) view.
+      <button id="replay">Replay all</button></p>
+  </header>
+  <div class="grid" id="grid"></div>
+</main>
+<script>
+  // Keep this list in the same order as the table in README.md.
+  var items = [
+    ['kinetic-title', 'Headline words rise; a highlight sweeps behind the key word'],
+    ['ring-stats', 'Progress rings draw while the numbers count up'],
+    ['timeline-draw', 'A line draws through milestones that pop in on time'],
+    ['marquee-band', 'Two tilted keyword bands looping in opposite directions'],
+    ['card-fan', 'A stack of cards fans out, floats and lifts on hover']
+  ]
+  var grid = document.getElementById('grid')
+  items.forEach(function (it) {
+    var f = document.createElement('figure')
+    f.innerHTML = '<div class="frame"><iframe loading="lazy" title="' + it[0] + '" src="' + it[0] + '.html?embed"></iframe></div>' +
+      '<figcaption><b><a href="' + it[0] + '.html">' + it[0] + '</a></b><span>' + it[1] + '</span></figcaption>'
+    grid.appendChild(f)
+  })
+  document.getElementById('replay').onclick = function () {
+    document.querySelectorAll('iframe').forEach(function (fr) { fr.contentWindow.location.reload() })
+  }
+</script>
+</body>
+</html>

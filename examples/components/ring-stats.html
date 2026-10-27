@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ring stats · component</title>
+<link rel="stylesheet" href="_preview/preview.css">
+</head>
+<body>
+<section class="slide active" dir="auto">
+<!-- COMPONENT ring-stats: copy from here -->
+<style>
+/* Ring stats: progress rings draw themselves while the number in the middle counts up.
+   Set each ring's value with --cx-p (0-100). The number uses the app's data-count effect. */
+.cx-rs-head{display:flex;flex-direction:column;gap:12px}
+.cx-rs-head p{color:var(--muted)}
+.cx-rs{margin-top:auto;margin-bottom:auto;display:grid;grid-template-columns:repeat(3,1fr);gap:28px}
+.cx-rs-card{display:flex;flex-direction:column;align-items:center;gap:18px;padding:32px 24px;text-align:center;
+  border-radius:24px;background:var(--surface);border:1px solid var(--border)}
+.cx-rs-ring{position:relative;width:200px;height:200px}
+.cx-rs-ring svg{width:100%;height:100%;transform:rotate(-90deg);overflow:visible}
+.cx-rs-ring circle{fill:none;stroke-width:10;stroke-linecap:round}
+.cx-rs-track{stroke:var(--border)}
+.cx-rs-arc{stroke:var(--cx-c,var(--accent));stroke-dasharray:100;stroke-dashoffset:calc(100 - var(--cx-p,50));
+  filter:drop-shadow(0 0 10px color-mix(in srgb,var(--cx-c,var(--accent)) 55%,transparent))}
+.cx-rs-num{position:absolute;inset:0;display:grid;place-items:center;font-family:var(--heading-font);
+  font-size:52px;font-weight:800;letter-spacing:-.02em}
+.cx-rs-label{font-size:24px;color:var(--muted);line-height:1.3}
+
+/* Motion */
+.slide:is(.active,.lv-leave) .cx-rs-head>*{animation:cx-rs-up .8s var(--lv-ease) both;animation-delay:calc(.1s + var(--cx-i,0) * .1s)}
+.slide:is(.active,.lv-leave) .cx-rs-card{animation:cx-rs-up .8s var(--lv-ease) both;animation-delay:calc(.35s + var(--cx-i,0) * .15s)}
+.slide:is(.active,.lv-leave) .cx-rs-arc{animation:cx-rs-draw 1.8s cubic-bezier(.65,0,.35,1) both;animation-delay:calc(.5s + var(--cx-i,0) * .15s)}
+@keyframes cx-rs-up{from{opacity:0;transform:translateY(30px)}}
+@keyframes cx-rs-draw{from{stroke-dashoffset:100}}
+@media (prefers-reduced-motion:reduce){.cx-rs *,.cx-rs-head *{animation:none!important}}
+</style>
+<div class="cx-rs-head">
+  <h2 style="--cx-i:0">Customers love the new flow</h2>
+  <p style="--cx-i:1">Survey of 2,400 users, September 2026</p>
+</div>
+<div class="cx-rs">
+  <div class="cx-rs-card" style="--cx-i:0;--cx-p:92">
+    <div class="cx-rs-ring">
+      <svg viewBox="0 0 120 120" aria-hidden="true"><circle class="cx-rs-track" cx="60" cy="60" r="54"/><circle class="cx-rs-arc" cx="60" cy="60" r="54" pathLength="100"/></svg>
+      <span class="cx-rs-num" data-count style="--d:.5s">92%</span>
+    </div>
+    <span class="cx-rs-label">would recommend it</span>
+  </div>
+  <div class="cx-rs-card" style="--cx-i:1;--cx-p:74;--cx-c:var(--good)">
+    <div class="cx-rs-ring">
+      <svg viewBox="0 0 120 120" aria-hidden="true"><circle class="cx-rs-track" cx="60" cy="60" r="54"/><circle class="cx-rs-arc" cx="60" cy="60" r="54" pathLength="100"/></svg>
+      <span class="cx-rs-num" data-count style="--d:.65s">74%</span>
+    </div>
+    <span class="cx-rs-label">finish setup on day one</span>
+  </div>
+  <div class="cx-rs-card" style="--cx-i:2;--cx-p:48;--cx-c:#f5a524">
+    <div class="cx-rs-ring">
+      <svg viewBox="0 0 120 120" aria-hidden="true"><circle class="cx-rs-track" cx="60" cy="60" r="54"/><circle class="cx-rs-arc" cx="60" cy="60" r="54" pathLength="100"/></svg>
+      <span class="cx-rs-num" data-count style="--d:.8s">48%</span>
+    </div>
+    <span class="cx-rs-label">less time to first deck</span>
+  </div>
+</div>
+<!-- /COMPONENT ring-stats -->
+</section>
+<script src="_preview/preview.js"></script>
+</body>
+</html>

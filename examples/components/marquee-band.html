@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Marquee band · component</title>
+<link rel="stylesheet" href="_preview/preview.css">
+</head>
+<body>
+<section class="slide active" dir="auto">
+<!-- COMPONENT marquee-band: copy from here -->
+<style>
+/* Marquee band: two tilted bands of keywords sliding in opposite directions, forever.
+   Each track holds its words twice (the second copy is aria-hidden) so the loop has no seam.
+   The bands bleed past the slide padding. Runs the other way in right-to-left slides. */
+.cx-mq-head{display:flex;flex-direction:column;gap:14px;max-width:900px}
+.cx-mq-head p{color:var(--muted)}
+.cx-mq{margin:auto -88px -72px;padding:40px 0 90px;display:flex;flex-direction:column;gap:0}
+.cx-mq-band{overflow:hidden;padding:20px 0;margin-inline:-40px;transform:rotate(var(--cx-tilt,-3deg));
+  box-shadow:0 20px 50px -20px rgba(0,0,0,.5)}
+.cx-mq-band.cx-mq-a{background:var(--accent);color:var(--accent-fg);position:relative;z-index:1}
+.cx-mq-band.cx-mq-b{--cx-tilt:2deg;background:var(--bg-solid);color:var(--fg);border-block:1px solid var(--border);margin-top:-12px}
+.cx-mq-track{display:flex;width:max-content;--cx-dx:-50%}
+.cx-mq-track:dir(rtl){--cx-dx:50%}
+.cx-mq-track>div{display:flex;flex:none}
+.cx-mq-track span{font-family:var(--heading-font);font-size:44px;font-weight:800;letter-spacing:-.01em;
+  white-space:nowrap;padding-inline:28px;display:flex;align-items:center;gap:56px}
+.cx-mq-track span::after{content:"✦";font-size:28px;opacity:.6}
+.cx-mq-b .cx-mq-track span:nth-child(even){color:transparent;-webkit-text-stroke:1.5px var(--fg)}
+
+/* Motion: bands sweep in, then their tracks loop. --cx-speed sets one loop's length. */
+.slide:is(.active,.lv-leave) .cx-mq-head>*{animation:cx-mq-up .8s var(--lv-ease) both;animation-delay:calc(.1s + var(--cx-i,0) * .12s)}
+.slide:is(.active,.lv-leave) .cx-mq-band{animation:cx-mq-in 1s var(--lv-ease) both}
+.slide:is(.active,.lv-leave) .cx-mq-b{animation-delay:.15s}
+.slide:is(.active,.lv-leave) .cx-mq-track{animation:cx-mq-loop var(--cx-speed,26s) linear infinite}
+.slide:is(.active,.lv-leave) .cx-mq-b .cx-mq-track{animation-direction:reverse;--cx-speed:32s}
+@keyframes cx-mq-loop{to{transform:translateX(var(--cx-dx))}}
+@keyframes cx-mq-in{from{opacity:0;transform:rotate(0deg) translateY(60px)}}
+@keyframes cx-mq-up{from{opacity:0;transform:translateY(24px)}}
+@media (prefers-reduced-motion:reduce){.cx-mq *,.cx-mq-head *{animation:none!important}}
+</style>
+<div class="cx-mq-head">
+  <h2 style="--cx-i:0">Everything your deck needs</h2>
+  <p style="--cx-i:1">Ask in plain words. The AI picks the layout, the chart and the motion.</p>
+</div>
+<div class="cx-mq">
+  <div class="cx-mq-band cx-mq-a"><div class="cx-mq-track">
+    <div><span>Pitch decks</span><span>Reports</span><span>Lessons</span><span>Quizzes</span><span>Promo videos</span></div>
+    <div aria-hidden="true"><span>Pitch decks</span><span>Reports</span><span>Lessons</span><span>Quizzes</span><span>Promo videos</span></div>
+  </div></div>
+  <div class="cx-mq-band cx-mq-b"><div class="cx-mq-track">
+    <div><span>Live charts</span><span>3D</span><span>Arabic &amp; RTL</span><span>PDF export</span><span>Motion</span><span>Themes</span></div>
+    <div aria-hidden="true"><span>Live charts</span><span>3D</span><span>Arabic &amp; RTL</span><span>PDF export</span><span>Motion</span><span>Themes</span></div>
+  </div></div>
+</div>
+<!-- /COMPONENT marquee-band -->
+</section>
+<script src="_preview/preview.js"></script>
+</body>
+</html>

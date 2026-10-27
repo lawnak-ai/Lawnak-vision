@@ -1,3 +1,5 @@
+import { useEffect, useState } from 'react'
+
 export function relativeTime(ts: number, now = Date.now()): string {
   const s = Math.max(0, Math.round((now - ts) / 1000))
   if (s < 60) return 'now'
@@ -16,4 +18,24 @@ export function relativeTime(ts: number, now = Date.now()): string {
 export function titleFromPrompt(prompt: string): string {
   const line = prompt.trim().split('\n')[0].replace(/\s+/g, ' ')
   return line.length > 48 ? line.slice(0, 45).trimEnd() + '…' : line || 'Untitled presentation'
+}
+
+/** An on/off choice remembered on this computer, e.g. whether a panel is hidden. */
+export function useStoredFlag(key: string, initial: boolean): [boolean, (next: boolean | ((cur: boolean) => boolean)) => void] {
+  const [value, setValue] = useState<boolean>(() => {
+    try {
+      const saved = localStorage.getItem(key)
+      return saved === null ? initial : saved === '1'
+    } catch {
+      return initial
+    }
+  })
+  useEffect(() => {
+    try {
+      localStorage.setItem(key, value ? '1' : '0')
+    } catch {
+      // Storage can be blocked; the choice then lasts until the app closes.
+    }
+  }, [key, value])
+  return [value, setValue]
 }

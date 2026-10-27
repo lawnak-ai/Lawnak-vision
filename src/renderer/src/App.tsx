@@ -1,15 +1,21 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import type { Deck, DeckSummary, GenerateEvent, ModelId, Settings, Slide } from '@shared/types'
+import type { AskAnswer, AskQuestion, Deck, DeckSummary, GenerateEvent, Settings, Slide } from '@shared/types'
 import { parseReply } from '@shared/parseSlides'
 import { newId } from '@shared/ids'
+import { undoLast } from '@shared/applyReply'
+import { choiceKey, modelOptions, parseChoiceKey, providerReady } from '@shared/providers'
 import { Sidebar, type View } from './components/Sidebar'
 import { Home, type NewDeckRequest } from './components/Home'
 import { DeckEditor } from './components/DeckEditor'
 import { HistoryView, TemplatesView } from './components/Views'
+import { ViewCardsView } from './components/viewcard/ViewCards'
 import { SettingsDialog } from './components/SettingsDialog'
+import { useAppTheme } from './appTheme'
 import type { LiveGeneration } from './components/ChatPanel'
 import { IconSidebar } from './components/icons'
 import { titleFromPrompt } from './util'
+import { exportVideo, VideoExportCancelled, type VideoExportControl } from './videoExport'
+import { isVideo } from '@shared/video'
 
 interface Generation {
   requestId: string
@@ -20,11 +26,21 @@ interface Generation {
   draft: Slide[]
   title?: string
   status: string
+  /** Questions from the AI about the look, waiting for the user. */
+  ask?: AskQuestion[]
 }
 
 interface Toast {
   text: string
   path?: string
+}
+
+/** A video export in progress. */
+interface VideoProgress {
+  title: string
+  fraction: number
+  note?: string
+  control: VideoExportControl
 }
 
 const api = window.api
@@ -38,6 +54,7 @@ export default function App() {
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [showSettings, setShowSettings] = useState(false)
   const [toast, setToast] = useState<Toast | null>(null)
+  const [videoProgress, setVideoProgress] = useState<VideoProgress | null>(null)
 
   const saveTimer = useRef<number | undefined>(undefined)
   const pendingSave = useRef<Deck | null>(null)
@@ -51,6 +68,8 @@ export default function App() {
     setToast(t)
     window.setTimeout(() => setToast((cur) => (cur === t ? null : cur)), 6000)
   }, [])
+
+  useAppTheme(settings?.appTheme)
 
   useEffect(() => {
     void api.getSettings().then(setSettings)
@@ -117,6 +136,12 @@ export default function App() {
           case 'status':
             update({ ...g, status: ev.text })
             break
+          case 'ask':
+            update({ ...g, ask: ev.questions })
+            break
+          case 'theme':
+            setDeck((cur) => (cur?.id === g.deckId ? { ...cur, themeId: ev.themeId } : cur))
+            break
           case 'text':
             update({ ...g, raw: g.raw + ev.text })
             break
@@ -166,13 +191,27 @@ export default function App() {
     [flushSave, showToast]
   )
 
+  const answerQuestions = useCallback((answers: AskAnswer[] | null) => {
+    const g = genRef.current
+    if (!g?.ask) return
+    const next = { ...g, ask: undefined, status: 'Thinking…' }
+    genRef.current = next
+    setGen(next)
+    void api.answer(g.requestId, answers)
+  }, [])
+
   const stopGeneration = useCallback(() => {
     if (genRef.current) void api.cancel(genRef.current.requestId)
   }, [])
 
   const createFromPrompt = useCallback(
     async (req: NewDeckRequest) => {
-      const d = await api.createDeck({ title: titleFromPrompt(req.prompt), project: req.project, themeId: req.themeId })
+      const d = await api.createDeck({
+        title: titleFromPrompt(req.prompt),
+        project: req.project,
+        themeId: req.themeId,
+        ...(req.video ? { kind: 'video' as const, format: req.video.format } : {})
+      })
       setDeck(d)
       setView({ kind: 'deck', id: d.id })
       await refreshDecks()
@@ -218,20 +257,121 @@ export default function App() {
     [showToast, withDeck]
   )
 
+  const startVideoExport = useCallback(() => {
+    if (view.kind !== 'deck' || !deck || !isVideo(deck) || videoProgress) return
+    if (genRef.current?.deckId === deck.id) {
+      showToast({ text: 'Wait for the AI to finish before exporting the video.' })
+      return
+    }
+    if (!deck.slides.length) {
+      showToast({ text: 'This video has no scenes yet.' })
+      return
+    }
+    const control: VideoExportControl = { cancelled: false }
+    const title = deck.title
+    void withDeck(async (id) => {
+      setVideoProgress({ title, fraction: 0, note: 'Getting ready…', control })
+      try {
+        const result = await exportVideo(
+          id,
+          (fraction, note) => setVideoProgress((cur) => (cur && cur.control === control ? { ...cur, fraction, note } : cur)),
+          control
+        )
+        if (result) {
+          showToast({ text: `Saved the video to ${result.path}${result.warning ? `. ${result.warning}` : ''}`, path: result.path })
+        }
+      } catch (e) {
+        if (!(e instanceof VideoExportCancelled)) showToast({ text: `The video could not be exported: ${e instanceof Error ? e.message : String(e)}` })
+      } finally {
+        setVideoProgress(null)
+      }
+    })
+  }, [deck, showToast, videoProgress, view.kind, withDeck])
+
+  const pickAudio = useCallback(() => {
+    if (!deck) return
+    const current = deck
+    void withDeck(async (id) => {
+      const audio = await api.pickAudio(id)
+      if (audio) editDeck({ ...current, audio })
+    })
+  }, [deck, editDeck, withDeck])
+
+  /** Deletes presentations without asking; callers confirm first. */
+  const removeDecks = useCallback(
+    async (ids: string[]) => {
+      if (!ids.length) return
+      if (pendingSave.current && ids.includes(pendingSave.current.id)) {
+        window.clearTimeout(saveTimer.current)
+        pendingSave.current = null
+      }
+      if (genRef.current && ids.includes(genRef.current.deckId)) {
+        // The main process stops the request too; forget it here so its events are ignored.
+        genRef.current = null
+        setGen(null)
+      }
+      try {
+        for (const id of ids) await api.deleteDeck(id)
+      } catch (e) {
+        showToast({ text: e instanceof Error ? e.message : String(e) })
+      }
+      setDeck((cur) => (cur && ids.includes(cur.id) ? null : cur))
+      setView((cur) => (cur.kind === 'deck' && ids.includes(cur.id) ? { kind: 'home' } : cur))
+      await refreshDecks()
+    },
+    [refreshDecks, showToast]
+  )
+
+  const deleteDeckById = useCallback(
+    async (id: string) => {
+      const title = decks.find((d) => d.id === id)?.title ?? (deck?.id === id ? deck.title : 'this presentation')
+      const warning = genRef.current?.deckId === id ? ' The AI will be stopped.' : ''
+      if (!window.confirm(`Delete “${title}”? This cannot be undone.${warning}`)) return
+      await removeDecks([id])
+    },
+    [deck, decks, removeDecks]
+  )
+
   const deleteDeck = useCallback(async () => {
-    if (!deck || !window.confirm(`Delete “${deck.title}”? This cannot be undone.`)) return
-    window.clearTimeout(saveTimer.current)
-    pendingSave.current = null
-    await api.deleteDeck(deck.id)
-    setDeck(null)
-    setView({ kind: 'home' })
-    await refreshDecks()
-  }, [deck, refreshDecks])
+    if (deck) await deleteDeckById(deck.id)
+  }, [deck, deleteDeckById])
+
+  const deleteProject = useCallback(
+    async (name: string) => {
+      if (!settings) return
+      const ids = decks.filter((d) => d.project === name).map((d) => d.id)
+      const what = ids.length ? ` and its ${ids.length} presentation${ids.length === 1 ? '' : 's'}` : ''
+      const warning = genRef.current && ids.includes(genRef.current.deckId) ? ' The AI will be stopped.' : ''
+      if (!window.confirm(`Delete project “${name}”${what}? This cannot be undone.${warning}`)) return
+      await removeDecks(ids)
+      setSettings(await api.setSettings({ projects: settings.projects.filter((p) => p !== name) }))
+    },
+    [decks, removeDecks, settings]
+  )
+
+  const clearChat = useCallback(() => {
+    if (!deck || !deck.chat.length) return
+    if (!window.confirm('Clear the chat history for this presentation? The slides stay as they are.')) return
+    editDeck({ ...deck, chat: [] })
+  }, [deck, editDeck])
+
+  const undoAiChange = useCallback(() => {
+    if (!deck) return
+    const previous = undoLast(deck)
+    if (previous) editDeck(previous)
+  }, [deck, editDeck])
 
   // ---- Settings ----
 
   const saveSettings = useCallback(async (patch: Partial<Settings>) => setSettings(await api.setSettings(patch)), [])
-  const setModel = useCallback((model: ModelId) => void saveSettings({ model }), [saveSettings])
+  /** Picks a model from a picker; its value is "provider:model". */
+  const setModel = useCallback(
+    (key: string) => {
+      const choice = parseChoiceKey(key)
+      if (choice) void saveSettings(choice)
+    },
+    [saveSettings]
+  )
 
   // ---- Menu shortcuts from the main process ----
 
@@ -245,8 +385,9 @@ export default function App() {
         else if (action === 'browser') openInBrowser()
         else if (action === 'export-html') exportAs('html')
         else if (action === 'export-pdf') exportAs('pdf')
+        else if (action === 'export-video') startVideoExport()
       }),
-    [exportAs, navigate, openInBrowser, present]
+    [exportAs, navigate, openInBrowser, present, startVideoExport]
   )
 
   // ---- What the editor shows: the saved deck, or the slides arriving from the AI. ----
@@ -265,13 +406,15 @@ export default function App() {
 
   const live: LiveGeneration | null =
     gen && deck && gen.deckId === deck.id
-      ? { status: gen.status, message: parseReply(gen.raw).message, slidesDone: gen.draft.length, scope: gen.scope }
+      ? { status: gen.status, message: parseReply(gen.raw).message, slidesDone: gen.draft.length, scope: gen.scope, ask: gen.ask }
       : null
 
   if (!settings) return <div className="loading" />
 
   const projects = Array.from(new Set([...settings.projects, ...decks.map((d) => d.project)]))
-  const hasKey = settings.hasApiKey || settings.envApiKey
+  const hasKey = providerReady(settings, settings.provider)
+  const models = modelOptions(settings)
+  const modelValue = choiceKey(settings)
 
   return (
     <div className={`app ${sidebarOpen ? '' : 'sidebar-hidden'}`}>
@@ -283,6 +426,8 @@ export default function App() {
           generatingDeckId={gen?.deckId ?? null}
           onNavigate={(v) => void navigate(v)}
           onNewProject={(name) => void saveSettings({ projects: Array.from(new Set([...settings.projects, name])) })}
+          onDeleteProject={(name) => void deleteProject(name)}
+          onDeleteDeck={(id) => void deleteDeckById(id)}
           onToggle={() => setSidebarOpen(false)}
           onOpenSettings={() => setShowSettings(true)}
         />
@@ -304,24 +449,33 @@ export default function App() {
           />
         )}
         {view.kind === 'templates' && <TemplatesView onUse={(id) => void createFromTemplate(id)} />}
-        {view.kind === 'history' && <HistoryView decks={decks} onOpen={(id) => void navigate({ kind: 'deck', id })} />}
+        {view.kind === 'components' && <ViewCardsView />}
+        {view.kind === 'history' && (
+          <HistoryView decks={decks} onOpen={(id) => void navigate({ kind: 'deck', id })} onDelete={(id) => void deleteDeckById(id)} />
+        )}
         {view.kind === 'deck' && viewDeck && viewDeck.id === view.id && (
           <DeckEditor
             key={viewDeck.id}
             deck={viewDeck}
             busy={gen?.deckId === viewDeck.id}
             live={live}
-            model={settings.model}
+            models={models}
+            model={modelValue}
             hasKey={hasKey}
             onChange={editDeck}
             onGenerate={(prompt, scope, index) => void startGeneration(viewDeck, prompt, scope, scope === 'slide' ? index : undefined)}
             onStop={stopGeneration}
+            onAnswer={answerQuestions}
             onModelChange={setModel}
             onPresent={present}
             onOpenInBrowser={openInBrowser}
             onExportHtml={() => exportAs('html')}
             onExportPdf={() => exportAs('pdf')}
+            onExportVideo={startVideoExport}
+            onPickAudio={pickAudio}
             onDelete={() => void deleteDeck()}
+            onClearChat={clearChat}
+            onUndo={undoAiChange}
             onOpenSettings={() => setShowSettings(true)}
             onSelectionChange={(i) => (selectedIndex.current = i)}
           />
@@ -333,8 +487,36 @@ export default function App() {
           settings={settings}
           onClose={() => setShowSettings(false)}
           onSave={saveSettings}
-          onSaveKey={async (key) => setSettings(await api.setApiKey(key))}
+          onSaveKey={async (provider, key) => setSettings(await api.setApiKey(provider, key))}
+          onPickLocal={async (what) => setSettings(await (what === 'exe' ? api.pickLocalExe() : api.pickLocalModelsDir()))}
         />
+      )}
+
+      {videoProgress && (
+        <div className="modal-backdrop">
+          <div className="video-progress" role="dialog" aria-label="Exporting video">
+            <h3>Exporting video</h3>
+            <p className="muted" dir="auto">{videoProgress.title}</p>
+            <div className="progress-track">
+              <i style={{ width: `${Math.round(videoProgress.fraction * 100)}%` }} />
+            </div>
+            <div className="video-progress-row">
+              <span className="muted small">
+                {videoProgress.note ?? `Recording frames… ${Math.round(videoProgress.fraction * 100)}%`}
+              </span>
+              <button
+                className="btn"
+                disabled={videoProgress.control.cancelled}
+                onClick={() => {
+                  videoProgress.control.cancelled = true
+                  setVideoProgress({ ...videoProgress, note: 'Stopping…' })
+                }}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {toast && (

@@ -1,6 +1,31 @@
+# Dependencies and build output
 node_modules/
 out/
 dist/
 release/
+
+# Logs
 *.log
+logs/
+
+# Secrets and API keys (never commit)
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+secrets*
+settings.json
+
+# Personal local settings and tools
+.claude/
+.vscode/
+.idea/
+*.exe
+!Ai-run/fastgguf.exe
+*.gguf
+
+# OS files
 .DS_Store
+Thumbs.db
+desktop.ini

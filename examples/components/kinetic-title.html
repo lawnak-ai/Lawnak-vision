@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Kinetic title · component</title>
+<link rel="stylesheet" href="_preview/preview.css">
+</head>
+<body>
+<section class="slide active" dir="auto">
+<!-- COMPONENT kinetic-title: copy from here -->
+<style>
+/* Kinetic title: words rise out of a mask one by one, a highlight sweeps behind the key word.
+   Pure CSS. Works per word, so Arabic letters stay joined. Put the highlight <i> inside the word to mark. */
+.cx-kt{margin:auto 0;display:flex;flex-direction:column;gap:28px;max-width:1000px}
+.cx-kt-chip{align-self:flex-start;font-size:20px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--accent);padding:8px 16px;border:1px solid var(--border);border-radius:999px;background:var(--surface)}
+.cx-kt h1{font-size:96px;line-height:1.08}
+.cx-kt-w{display:inline-block;overflow:hidden;vertical-align:bottom;padding-bottom:.08em;margin-bottom:-.08em}
+.cx-kt-w>span{display:inline-block}
+.cx-kt-mark{position:relative;z-index:0;color:var(--accent-fg);padding-inline:.12em}
+.cx-kt-hl{position:absolute;inset:.08em 0 .02em;z-index:-1;border-radius:.12em;background:var(--accent)}
+.cx-kt-sub{font-size:30px;color:var(--muted);max-width:760px}
+
+/* Motion: runs while the slide is shown. Without animation the end state shows, as in PDF export. */
+.slide:is(.active,.lv-leave) .cx-kt-chip{animation:cx-kt-fade .7s var(--lv-ease) .1s both}
+.slide:is(.active,.lv-leave) .cx-kt-w>span{animation:cx-kt-rise .9s var(--lv-ease) both;
+  animation-delay:calc(.25s + var(--cx-w,0) * 90ms)}
+.slide:is(.active,.lv-leave) .cx-kt-hl{animation:cx-kt-sweep .7s cubic-bezier(.77,0,.18,1) both;
+  animation-delay:calc(.45s + var(--cx-w,0) * 90ms)}
+/* The marked word rises like the others, then its text turns to the accent's ink color as the sweep lands. */
+.slide:is(.active,.lv-leave) .cx-kt-w>.cx-kt-mark{animation:cx-kt-rise .9s var(--lv-ease) both,cx-kt-ink .01s linear both;
+  animation-delay:calc(.25s + var(--cx-w,0) * 90ms),calc(.75s + var(--cx-w,0) * 90ms)}
+.slide:is(.active,.lv-leave) .cx-kt-sub{animation:cx-kt-fade .8s var(--lv-ease) 1s both}
+.cx-kt-hl{transform-origin:left center}
+.cx-kt-hl:dir(rtl){transform-origin:right center}
+
+@keyframes cx-kt-rise{from{transform:translateY(105%)}}
+@keyframes cx-kt-sweep{from{transform:scaleX(0)}}
+@keyframes cx-kt-ink{from{color:inherit}}
+@keyframes cx-kt-fade{from{opacity:0;transform:translateY(16px)}}
+@media (prefers-reduced-motion:reduce){.cx-kt *{animation:none!important}}
+</style>
+<div class="cx-kt">
+  <span class="cx-kt-chip">Keynote 2026</span>
+  <h1>
+    <span class="cx-kt-w" style="--cx-w:0"><span>Build</span></span>
+    <span class="cx-kt-w" style="--cx-w:1"><span>slides</span></span>
+    <span class="cx-kt-w" style="--cx-w:2"><span>that</span></span>
+    <span class="cx-kt-w" style="--cx-w:3"><span class="cx-kt-mark"><i class="cx-kt-hl" aria-hidden="true"></i>move</span></span>
+    <span class="cx-kt-w" style="--cx-w:4"><span>people.</span></span>
+  </h1>
+  <p class="cx-kt-sub">One prompt, a full deck, and motion that lands on the beat.</p>
+</div>
+<!-- /COMPONENT kinetic-title -->
+</section>
+<script src="_preview/preview.js"></script>
+</body>
+</html>

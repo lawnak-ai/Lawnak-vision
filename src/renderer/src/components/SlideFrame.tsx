@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { Deck } from '@shared/types'
-import { buildSlideDocument, SLIDE_HEIGHT, SLIDE_WIDTH } from '@shared/deckHtml'
+import { buildSlideDocument } from '@shared/deckHtml'
+import { slideSize } from '@shared/video'
 
 interface Props {
   deck: Deck
   index: number
-  /** Fixed width in px. When omitted the frame fills its parent, keeping 16:9. */
+  /** Fixed width in px. When omitted the frame fills its parent, keeping the slide's shape. */
   width?: number
   animate?: boolean
   /** Thumbnails ignore the mouse so clicks select the slide. */
@@ -14,10 +15,11 @@ interface Props {
 
 /**
  * Renders one slide in a sandboxed iframe (scripts run, but the slide can't
- * reach the app) and scales the 1280x720 canvas to the available size.
+ * reach the app) and scales the canvas (1280x720, or the video's size) to the available size.
  */
 export function SlideFrame({ deck, index, width, animate = false, interactive = false }: Props) {
   const slide = deck.slides[index]
+  const { width: SLIDE_WIDTH, height: SLIDE_HEIGHT } = slideSize(deck)
   const hostRef = useRef<HTMLDivElement>(null)
   const [fit, setFit] = useState({ w: width ?? 0, h: width ? (width * SLIDE_HEIGHT) / SLIDE_WIDTH : 0 })
 
@@ -37,13 +39,13 @@ export function SlideFrame({ deck, index, width, animate = false, interactive = 
     const ro = new ResizeObserver(measure)
     ro.observe(host)
     return () => ro.disconnect()
-  }, [width])
+  }, [width, SLIDE_WIDTH, SLIDE_HEIGHT])
 
   // Only rebuild (and so reload the iframe) when something this slide uses changes.
   const srcDoc = useMemo(
     () => buildSlideDocument(deck, index, { animate }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [slide, deck.themeId, deck.css, index, animate]
+    [slide, deck.themeId, deck.css, deck.kind, deck.format, index, animate]
   )
 
   const scale = fit.w / SLIDE_WIDTH

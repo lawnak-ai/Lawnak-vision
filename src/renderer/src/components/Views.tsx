@@ -3,7 +3,7 @@ import type { Deck, DeckSummary } from '@shared/types'
 import { TEMPLATES } from '@shared/templates'
 import { SlideFrame } from './SlideFrame'
 import { relativeTime } from '../util'
-import { IconSearch } from './icons'
+import { IconSearch, IconTrash } from './icons'
 
 export function TemplatesView({ onUse }: { onUse: (templateId: string) => void }) {
   // Build throwaway decks so the first slide of each template can be previewed.
@@ -15,7 +15,8 @@ export function TemplatesView({ onUse }: { onUse: (templateId: string) => void }
           title: t.name,
           project: '',
           themeId: t.themeId,
-          css: '',
+          css: t.css ?? '',
+          transition: t.transition,
           slides: t.slides.map((s, i) => ({ ...s, id: `${t.id}-${i}` })),
           chat: [],
           createdAt: 0,
@@ -46,7 +47,7 @@ export function TemplatesView({ onUse }: { onUse: (templateId: string) => void }
   )
 }
 
-export function HistoryView({ decks, onOpen }: { decks: DeckSummary[]; onOpen: (id: string) => void }) {
+export function HistoryView({ decks, onOpen, onDelete }: { decks: DeckSummary[]; onOpen: (id: string) => void; onDelete: (id: string) => void }) {
   const [q, setQ] = useState('')
   const shown = decks.filter((d) => d.title.toLowerCase().includes(q.trim().toLowerCase()))
   return (
@@ -61,14 +62,21 @@ export function HistoryView({ decks, onOpen }: { decks: DeckSummary[]; onOpen: (
       ) : (
         <div className="history-list">
           {shown.map((d) => (
-            <button key={d.id} className="history-row" onClick={() => onOpen(d.id)}>
-              <span className="deck-title" dir="auto">
-                {d.title}
-              </span>
-              <span className="muted small">{d.project}</span>
-              <span className="muted small">{d.slideCount} slides</span>
-              <span className="muted small">{relativeTime(d.updatedAt)}</span>
-            </button>
+            <div key={d.id} className="history-item">
+              <button className="history-row" onClick={() => onOpen(d.id)}>
+                <span className="deck-title" dir="auto">
+                  {d.title}
+                </span>
+                <span className="muted small">{d.project}</span>
+                <span className="muted small">
+                  {d.kind === 'video' ? `Video · ${d.slideCount} scenes` : `${d.slideCount} slides`}
+                </span>
+                <span className="muted small">{relativeTime(d.updatedAt)}</span>
+              </button>
+              <button className="icon-btn small row-action" title="Delete presentation" onClick={() => onDelete(d.id)}>
+                <IconTrash size={14} />
+              </button>
+            </div>
           ))}
         </div>
       )}
