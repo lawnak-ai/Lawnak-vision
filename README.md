@@ -6,9 +6,12 @@ Then edit them by hand or by chatting, present them full screen, or open them in
 
 Built with **Electron + TypeScript + React**.
 
-![Home screen](docs/home.png)
-
 ![Slide editor with the AI assistant](docs/editor.png)
+
+| | |
+|---|---|
+| ![A 3D slide with a live glass orb](docs/slide-3d.png) | ![An annual report slide](docs/slide-report.png) |
+| ![Home screen](docs/home.png) | ![Templates](docs/templates.png) |
 
 ## Features
 
